@@ -17,25 +17,19 @@ public class ComponentsDrawer {
     private static final int MIN_PIXELS_INSIDE_COMPONENT = 10;
 
     public void drawAndSave(String imagePath) {
-        //        numpy_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-        //
-        //        components_finder = ComponentsFinder(4, numpy_image)
-        //        components = components_finder.find_components()
-        //        comp_count = self.component_counter(components)
-
         Mat image = Imgcodecs.imread(imagePath, Imgcodecs.IMREAD_GRAYSCALE);
 
-        ComponentsFinder componentsFinder = new ComponentsFinder();
+        ComponentsFinder componentsFinder = new ComponentsFinder(1, image);
         int[] components = componentsFinder.findComponents();
 
         Map<Integer, Integer> compCounter = countComponents(components);
         Map<Integer, Integer[]> colorMap = new HashMap<>();
 
-        Mat resultImage = new Mat(image.rows(), image.cols(), CvType.CV_64FC1);
+        Mat resultImage = new Mat(image.rows(), image.cols(), CvType.CV_32SC3);
         for (int row = 0; row < image.rows(); ++row) {
             for (int col = 0; col < image.cols(); ++col) {
-                int linearIndex = Utils.cellToLinearIndex(row, col);
-                if (compCounter.get(components[linearIndex]) > ComponentsDrawer.MIN_PIXELS_INSIDE_COMPONENT) {
+                int linearIndex = Utils.cellToLinearIndex(row, col, image);
+                if (compCounter.get(components[linearIndex]) >= ComponentsDrawer.MIN_PIXELS_INSIDE_COMPONENT) {
                     resultImage.put(row, col, getColor(colorMap, components[linearIndex]));
                 } else {
                     resultImage.put(row, col, new int[]{0, 0, 0});
@@ -43,10 +37,11 @@ public class ComponentsDrawer {
             }
         }
 
-        //        print(f'Number of components: {len(color_map)}')
-        //        image_name = image_path.split('/')[-1]
-        //        cv2.imwrite(f'results/grayscale_{image_name}', numpy_image)
-        //        cv2.imwrite(f'results/{image_name}', result_rgb_image)
+        System.out.println("Number of components: " + colorMap.size());
+        String[] tokens = imagePath.split("/");
+        String imageName = tokens[tokens.length - 1];
+        Imgcodecs.imwrite("results/grayscale_" + imageName, image);
+        Imgcodecs.imwrite("results/components_" + imageName, resultImage);
     }
 
     private int[] getColor(Map<Integer, Integer[]> colorMap, int componentId) {
