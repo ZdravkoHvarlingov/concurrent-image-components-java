@@ -1,0 +1,10 @@
+.classpath
+.project
+.settings
+.idea
+.DS_Store
+*.iml
+*.log
+*.class
+**/core-properties/**
+**/target/**
