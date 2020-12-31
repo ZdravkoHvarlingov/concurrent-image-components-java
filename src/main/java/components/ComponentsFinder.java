@@ -81,7 +81,7 @@ public class ComponentsFinder {
         int[] rowMove = { 0, 1, 0, -1, -1, -1, 1, 1 };
         int[] colMove = { 1, 0, -1, 0, -1, 1, 1, -1 };
         for (int row = 0; row < rows; ++row) {
-            for (int col = startCol; col < endCol; ++col) {
+            for (int col = startCol; col <= endCol; ++col) {
                 for (int move = 0; move < rowMove.length; ++move) {
                     int newRow = row + rowMove[move];
                     int newCol = col + colMove[move];
@@ -100,17 +100,7 @@ public class ComponentsFinder {
                 MessageFormat.format("Thread {0} components finding execution time: {1} millis",
                         threadNum, Duration.between(start, end).toMillis()));
 
-        int mergeThread = threadNum + factor / 2;
-        if (threadNum % factor != 0 || mergeThread >= this.numberOfThreads) {
-            System.out.println("Thread " + threadNum + " finished execution.");
-            this.readyFlags[threadNum] = true;
-            this.locks[threadNum].unlock();
-            return;
-        }
-
-        this.waitThread(threadNum, mergeThread);
-        this.threadRegions[threadNum].setEnd(this.threadRegions[mergeThread].getEnd());
-        this.mergeRegions(factor * 2, endCol, threadNum);
+        finishOrMerge(factor, threadNum);
     }
 
     @SuppressWarnings("Duplicates")
@@ -142,6 +132,10 @@ public class ComponentsFinder {
         System.out.println(
                 MessageFormat.format("Thread {0} components finding execution time: {1} millis", threadNum, Duration.between(start, end).toMillis()));
 
+        finishOrMerge(factor, threadNum);
+    }
+
+    private void finishOrMerge(int factor, int threadNum) {
         int mergeThread = threadNum + factor / 2;
         if (threadNum % factor != 0 || mergeThread >= this.numberOfThreads) {
             System.out.println("Thread " + threadNum + " finished execution.");
@@ -151,8 +145,9 @@ public class ComponentsFinder {
         }
 
         this.waitThread(threadNum, mergeThread);
+        int mergeCol = this.threadRegions[threadNum].getEnd();
         this.threadRegions[threadNum].setEnd(this.threadRegions[mergeThread].getEnd());
-        this.mergeRegions(factor * 2, endCol, threadNum);
+        this.mergeRegions(factor * 2, mergeCol, threadNum);
     }
 
     private void waitThread(int waitingThread, int waitedThread) {

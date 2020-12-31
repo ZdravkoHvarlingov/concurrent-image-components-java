@@ -16,10 +16,10 @@ public class ComponentsDrawer {
 
     private static final int MIN_PIXELS_INSIDE_COMPONENT = 10;
 
-    public void drawAndSave(String imagePath) {
+    public void drawAndSave(String imagePath, int numberOfThreads) {
         Mat image = Imgcodecs.imread(imagePath, Imgcodecs.IMREAD_GRAYSCALE);
 
-        ComponentsFinder componentsFinder = new ComponentsFinder(1, image);
+        ComponentsFinder componentsFinder = new ComponentsFinder(numberOfThreads, image);
         int[] components = componentsFinder.findComponents();
 
         Map<Integer, Integer> compCounter = countComponents(components);
