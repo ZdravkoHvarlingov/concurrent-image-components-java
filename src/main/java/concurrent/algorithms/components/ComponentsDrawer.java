@@ -6,6 +6,7 @@ import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import concurrent.algorithms.utils.Utils;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,10 +17,10 @@ public class ComponentsDrawer {
 
     private static final int MIN_PIXELS_INSIDE_COMPONENT = 10;
 
-    public void drawAndSave(String imagePath, int numberOfThreads, int similarity) {
+    public void drawAndSave(String imagePath, int numberOfThreads, int similarity, boolean verbose) {
         Mat image = Imgcodecs.imread(imagePath, Imgcodecs.IMREAD_GRAYSCALE);
 
-        ComponentsFinder componentsFinder = new ComponentsFinder(numberOfThreads, image, similarity);
+        ComponentsFinder componentsFinder = new ComponentsFinder(numberOfThreads, image, similarity, verbose);
         componentsFinder.execute();
 
         Map<Integer, Integer> compCounter = countComponents(image, componentsFinder);
@@ -38,10 +39,18 @@ public class ComponentsDrawer {
         }
 
         System.out.println("Number of components: " + colorMap.size());
-        String[] tokens = imagePath.split("/");
+        saveImages(imagePath, image, resultImage);
+    }
+
+    private void saveImages(String imagePath, Mat image, Mat resultImage) {
+        File directory = new File("results");
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+        String[] tokens = imagePath.split(File.separator);
         String imageName = tokens[tokens.length - 1];
-        Imgcodecs.imwrite("grayscale_" + imageName, image);
-        Imgcodecs.imwrite("components_" + imageName, resultImage);
+        Imgcodecs.imwrite("results" + File.separator + "grayscale_" + imageName, image);
+        Imgcodecs.imwrite("results" + File.separator + "components_" + imageName, resultImage);
     }
 
     private int[] getColor(Map<Integer, Integer[]> colorMap, int componentId) {

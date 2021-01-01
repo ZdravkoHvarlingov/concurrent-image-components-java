@@ -20,13 +20,15 @@ class ComponentsFinder {
     private ImageUnionFind components;
     private int numberOfThreads;
     private int similarity;
+    private boolean verbose;
     private Mat image;
     private Region[] threadRegions;
     private ReentrantLock[] locks;
     private boolean[] readyFlags;
 
-    ComponentsFinder(int numberOfThreads, Mat grayscaleImage, int similarity) {
+    ComponentsFinder(int numberOfThreads, Mat grayscaleImage, int similarity, boolean verbose) {
         this.similarity = similarity;
+        this.verbose = verbose;
         this.numberOfThreads = numberOfThreads;
         this.locks = new ReentrantLock[numberOfThreads];
         for (int i = 0; i < numberOfThreads; ++i) {
@@ -64,7 +66,7 @@ class ComponentsFinder {
         this.components.compressPaths();
         Instant end = Instant.now();
         System.out.println("Components finding execution time: " + Duration.between(start, end).toMillis() + " millis.");
-        System.out.println("Flags: " + Arrays.toString(this.readyFlags));
+        logToStandardOutput("Flags: " + Arrays.toString(this.readyFlags));
     }
 
     int getPixelComponent(int row, int col) {
@@ -77,8 +79,8 @@ class ComponentsFinder {
         int rows = image.rows();
         int startCol = threadRegions[threadNum].getStart();
         int endCol = threadRegions[threadNum].getEnd();
-        System.out.println(
-                MessageFormat.format("Thread {0} executing in  the column range {1} - {2}.", threadNum, startCol, endCol));
+        logToStandardOutput(MessageFormat.format("Thread {0} executing in  the column range {1} - {2}.",
+                threadNum, startCol, endCol));
 
         Instant start = Instant.now();
         int[] rowMove = { 0, 1, 0, -1, -1, -1, 1, 1 };
@@ -90,9 +92,8 @@ class ComponentsFinder {
         }
         Instant end = Instant.now();
 
-        System.out.println(
-                MessageFormat.format("Thread {0} components finding execution time: {1} millis",
-                        threadNum, Duration.between(start, end).toMillis()));
+        logToStandardOutput(MessageFormat.format("Thread {0} components finding execution time: {1} millis",
+                threadNum, Duration.between(start, end).toMillis()));
         finishOrMerge(factor, threadNum);
     }
 
@@ -100,10 +101,8 @@ class ComponentsFinder {
         int rows = image.rows();
         int startCol = threadRegions[threadNum].getStart();
         int endCol = threadRegions[threadNum].getEnd();
-        System.out.println(
-                MessageFormat.format("Thread {0} executing in  the column range {1} - {2} and merge col {3}.",
-                        threadNum, startCol, endCol, mergeCol));
-
+        logToStandardOutput(MessageFormat.format("Thread {0} executing in  the column range {1} - {2} and merge col {3}.",
+                threadNum, startCol, endCol, mergeCol));
         Instant start = Instant.now();
         int[] rowMove = { -1, 0, 1 };
         int[] colMove = { 1, 1, 1 };
@@ -112,8 +111,8 @@ class ComponentsFinder {
         }
         Instant end = Instant.now();
 
-        System.out.println(
-                MessageFormat.format("Thread {0} components finding execution time: {1} millis", threadNum, Duration.between(start, end).toMillis()));
+        logToStandardOutput(MessageFormat.format("Thread {0} components finding execution time: {1} millis",
+                threadNum, Duration.between(start, end).toMillis()));
         finishOrMerge(factor, threadNum);
     }
 
@@ -134,7 +133,7 @@ class ComponentsFinder {
     private void finishOrMerge(int factor, int threadNum) {
         int mergeThread = threadNum + factor / 2;
         if (threadNum % factor != 0 || mergeThread >= this.numberOfThreads) {
-            System.out.println("Thread " + threadNum + " finished execution.");
+            logToStandardOutput("Thread " + threadNum + " finished execution.");
             this.readyFlags[threadNum] = true;
             this.locks[threadNum].unlock();
             return;
@@ -147,12 +146,12 @@ class ComponentsFinder {
     }
 
     private void waitThread(int waitingThread, int waitedThread) {
-        System.out.println("Thread " + waitingThread + " starts waiting for thread " + waitedThread);
+        logToStandardOutput("Thread " + waitingThread + " starts waiting for thread " + waitedThread);
         Instant start = Instant.now();
         this.locks[waitedThread].lock();
         Instant end = Instant.now();
-        System.out.println(MessageFormat.format("Thread {0} waited for thread {1} for {2} millis.",
-                        waitingThread, waitedThread, Duration.between(start, end).toMillis()));
+        logToStandardOutput(MessageFormat.format("Thread {0} waited for thread {1} for {2} millis.",
+                waitingThread, waitedThread, Duration.between(start, end).toMillis()));
     }
 
     private void constructThreadRegions() {
@@ -166,6 +165,12 @@ class ComponentsFinder {
             threadRegions[threadNum].setEnd((threadNum + 1) * numberOfThreadCols - 1);
         }
         threadRegions[numberOfThreads - 1].setEnd(columns - 1);
+    }
+
+    private void logToStandardOutput(String message) {
+        if (this.verbose) {
+            System.out.println(message);
+        }
     }
 
     private class ThreadTask implements Runnable {

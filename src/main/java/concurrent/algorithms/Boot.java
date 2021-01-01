@@ -23,6 +23,9 @@ public class Boot {
         similarityOpt.setRequired(true);
         options.addOption(similarityOpt);
 
+        Option verboseOpt = new Option("v", "verbose", false, "log additional information");
+        options.addOption(verboseOpt);
+
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;
@@ -36,10 +39,15 @@ public class Boot {
             return null;
         }
 
+        boolean verbose = false;
+        if (cmd.hasOption("verbose")) {
+            verbose = true;
+        }
         return new CLIParams(
                 cmd.getOptionValue("image"),
                 Integer.parseInt(cmd.getOptionValue("threads")),
-                Integer.parseInt(cmd.getOptionValue("similarity"))
+                Integer.parseInt(cmd.getOptionValue("similarity")),
+                verbose
         );
     }
 
@@ -54,7 +62,8 @@ public class Boot {
         componentsDrawer.drawAndSave(
                 params.getInputImageFile(),
                 params.getNumberOfThreads(),
-                params.getSimilarity()
+                params.getSimilarity(),
+                params.isVerbose()
         );
     }
 
@@ -65,5 +74,6 @@ public class Boot {
         private String inputImageFile;
         private int numberOfThreads;
         private int similarity;
+        private boolean verbose;
     }
 }
