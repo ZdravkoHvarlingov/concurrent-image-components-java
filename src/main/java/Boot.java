@@ -7,6 +7,6 @@ public class Boot {
         nu.pattern.OpenCV.loadShared();
 
         ComponentsDrawer componentsDrawer = new ComponentsDrawer();
-        componentsDrawer.drawAndSave("images/landscape.jpg", 16);
+        componentsDrawer.drawAndSave("images/landscape.jpg", 5);
     }
 }

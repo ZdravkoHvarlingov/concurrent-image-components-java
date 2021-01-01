@@ -20,17 +20,17 @@ public class ComponentsDrawer {
         Mat image = Imgcodecs.imread(imagePath, Imgcodecs.IMREAD_GRAYSCALE);
 
         ComponentsFinder componentsFinder = new ComponentsFinder(numberOfThreads, image);
-        int[] components = componentsFinder.findComponents();
+        componentsFinder.execute();
 
-        Map<Integer, Integer> compCounter = countComponents(components);
+        Map<Integer, Integer> compCounter = countComponents(image, componentsFinder);
         Map<Integer, Integer[]> colorMap = new HashMap<>();
 
         Mat resultImage = new Mat(image.rows(), image.cols(), CvType.CV_32SC3);
         for (int row = 0; row < image.rows(); ++row) {
             for (int col = 0; col < image.cols(); ++col) {
-                int linearIndex = Utils.cellToLinearIndex(row, col, image);
-                if (compCounter.get(components[linearIndex]) >= ComponentsDrawer.MIN_PIXELS_INSIDE_COMPONENT) {
-                    resultImage.put(row, col, getColor(colorMap, components[linearIndex]));
+                int pixelComponent = componentsFinder.getPixelComponent(row, col);
+                if (compCounter.get(pixelComponent) >= ComponentsDrawer.MIN_PIXELS_INSIDE_COMPONENT) {
+                    resultImage.put(row, col, getColor(colorMap, pixelComponent));
                 } else {
                     resultImage.put(row, col, new int[]{0, 0, 0});
                 }
@@ -52,10 +52,13 @@ public class ComponentsDrawer {
         return Arrays.stream(colorMap.get(componentId)).mapToInt(Integer::intValue).toArray();
     }
 
-    private Map<Integer, Integer> countComponents(int[] components) {
+    private Map<Integer, Integer> countComponents(Mat image, ComponentsFinder componentsFinder) {
         Map<Integer, Integer> compCount = new HashMap<>();
-        for (int comp: components) {
-            compCount.put(comp, compCount.getOrDefault(comp, 0) + 1);
+        for (int row = 0; row < image.rows(); ++row) {
+            for (int col = 0; col < image.cols(); ++col) {
+                int pixelComponent = componentsFinder.getPixelComponent(row, col);
+                compCount.put(pixelComponent, compCount.getOrDefault(pixelComponent, 0) + 1);
+            }
         }
 
         return compCount;

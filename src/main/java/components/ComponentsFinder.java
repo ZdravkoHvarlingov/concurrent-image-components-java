@@ -2,7 +2,7 @@ package components;
 
 import org.opencv.core.Mat;
 import utils.Region;
-import utils.UnionFind;
+import utils.ImageUnionFind;
 import utils.Utils;
 
 import java.text.MessageFormat;
@@ -15,16 +15,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 
-public class ComponentsFinder {
+class ComponentsFinder {
 
-    private UnionFind components;
+    private ImageUnionFind components;
     private int numberOfThreads;
     private Mat image;
     private Region[] threadRegions;
     private ReentrantLock[] locks;
     private boolean[] readyFlags;
 
-    public ComponentsFinder(int numberOfThreads, Mat grayscaleImage) {
+    ComponentsFinder(int numberOfThreads, Mat grayscaleImage) {
         this.numberOfThreads = numberOfThreads;
         this.locks = new ReentrantLock[numberOfThreads];
         for (int i = 0; i < numberOfThreads; ++i) {
@@ -33,15 +33,15 @@ public class ComponentsFinder {
 
         this.readyFlags = new boolean[numberOfThreads];
         this.image = grayscaleImage;
-        this.components = new UnionFind(image.rows() * image.cols());
+        this.components = new ImageUnionFind(image);
 
         constructThreadRegions();
     }
 
-    public int[] findComponents() {
+    void execute() {
         for (int i = 0; i < this.numberOfThreads; ++i) {
             if (this.readyFlags[i]) {
-                return components.getParents();
+                return;
             }
         }
 
@@ -63,11 +63,12 @@ public class ComponentsFinder {
         Instant end = Instant.now();
         System.out.println("Components finding execution time: " + Duration.between(start, end).toMillis() + " millis.");
         System.out.println("Flags: " + Arrays.toString(this.readyFlags));
-
-        return this.components.getParents();
     }
 
-    @SuppressWarnings("Duplicates")
+    int getPixelComponent(int row, int col) {
+        return this.components.findComponent(row, col);
+    }
+
     private void constructComponents(int factor, int threadNum) {
         this.locks[threadNum].lock();
 
@@ -76,34 +77,23 @@ public class ComponentsFinder {
         int endCol = threadRegions[threadNum].getEnd();
         System.out.println(
                 MessageFormat.format("Thread {0} executing in  the column range {1} - {2}.", threadNum, startCol, endCol));
-        Instant start = Instant.now();
 
+        Instant start = Instant.now();
         int[] rowMove = { 0, 1, 0, -1, -1, -1, 1, 1 };
         int[] colMove = { 1, 0, -1, 0, -1, 1, 1, -1 };
         for (int row = 0; row < rows; ++row) {
             for (int col = startCol; col <= endCol; ++col) {
-                for (int move = 0; move < rowMove.length; ++move) {
-                    int newRow = row + rowMove[move];
-                    int newCol = col + colMove[move];
-
-                    if (Utils.isCellInsideRegion(newRow, newCol, 0, rows - 1, startCol, endCol)
-                            && Utils.areGrayscaleColorsSimilar((int)image.get(row, col)[0], (int)image.get(newRow, newCol)[0])) {
-                        this.components.union(Utils.cellToLinearIndex(row, col, image), Utils.cellToLinearIndex(newRow, newCol, image));
-                    }
-                }
+                processAdjacentPixels(row, col, startCol, endCol, rowMove, colMove);
             }
         }
-
         Instant end = Instant.now();
-        Duration.between(start, end);
+
         System.out.println(
                 MessageFormat.format("Thread {0} components finding execution time: {1} millis",
                         threadNum, Duration.between(start, end).toMillis()));
-
         finishOrMerge(factor, threadNum);
     }
 
-    @SuppressWarnings("Duplicates")
     private void mergeRegions(int factor, int mergeCol, int threadNum) {
         int rows = image.rows();
         int startCol = threadRegions[threadNum].getStart();
@@ -111,28 +101,32 @@ public class ComponentsFinder {
         System.out.println(
                 MessageFormat.format("Thread {0} executing in  the column range {1} - {2} and merge col {3}.",
                         threadNum, startCol, endCol, mergeCol));
-        Instant start = Instant.now();
 
+        Instant start = Instant.now();
         int[] rowMove = { -1, 0, 1 };
         int[] colMove = { 1, 1, 1 };
         for (int row = 0; row < rows; ++row) {
-            for (int move = 0; move < rowMove.length; ++move) {
-                int newRow = row + rowMove[move];
-                int newCol = mergeCol + colMove[move];
-
-                if (Utils.isCellInsideRegion(newRow, newCol, 0, rows - 1, startCol, endCol)
-                        && Utils.areGrayscaleColorsSimilar((int)image.get(row, mergeCol)[0], (int)image.get(newRow, newCol)[0])) {
-                    this.components.union(Utils.cellToLinearIndex(row, mergeCol, image), Utils.cellToLinearIndex(newRow, newCol, image));
-                }
-            }
+            processAdjacentPixels(row, mergeCol, startCol, endCol, rowMove, colMove);
         }
-
         Instant end = Instant.now();
-        Duration.between(start, end);
+
         System.out.println(
                 MessageFormat.format("Thread {0} components finding execution time: {1} millis", threadNum, Duration.between(start, end).toMillis()));
-
         finishOrMerge(factor, threadNum);
+    }
+
+    private void processAdjacentPixels(int row, int col, int startCol, int endCol, int[] rowMove, int[] colMove) {
+        int rows = this.image.rows();
+
+        for (int move = 0; move < rowMove.length; ++move) {
+            int newRow = row + rowMove[move];
+            int newCol = col + colMove[move];
+
+            if (Utils.isCellInsideRegion(newRow, newCol, 0, rows - 1, startCol, endCol)
+                    && Utils.areGrayscaleColorsSimilar((int) image.get(row, col)[0], (int) image.get(newRow, newCol)[0])) {
+                this.components.unionComponents(row, col, newRow, newCol);
+            }
+        }
     }
 
     private void finishOrMerge(int factor, int threadNum) {
@@ -178,7 +172,7 @@ public class ComponentsFinder {
         private int threadNum;
         private ComponentsFinder componentsFinder;
 
-        public ThreadTask(int factor, int threadNum, ComponentsFinder componentsFinder) {
+        ThreadTask(int factor, int threadNum, ComponentsFinder componentsFinder) {
             this.factor = factor;
             this.threadNum = threadNum;
             this.componentsFinder = componentsFinder;
