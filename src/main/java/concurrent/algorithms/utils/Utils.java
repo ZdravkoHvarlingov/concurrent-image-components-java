@@ -1,4 +1,4 @@
-package utils;
+package concurrent.algorithms.utils;
 
 import org.opencv.core.Mat;
 
@@ -7,8 +7,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
 
-    public static boolean areGrayscaleColorsSimilar(int pixel1, int pixel2) {
-        return Math.abs(pixel1 - pixel2) < 7;
+    public static boolean areGrayscaleColorsSimilar(int pixel1, int pixel2, int similarity) {
+        return Math.abs(pixel1 - pixel2) < similarity;
     }
 
     public static boolean isCellInsideRegion(int row, int col, int rowMin, int rowMax, int colMin, int colMax) {

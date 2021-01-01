@@ -1,4 +1,4 @@
-package utils;
+package concurrent.algorithms.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

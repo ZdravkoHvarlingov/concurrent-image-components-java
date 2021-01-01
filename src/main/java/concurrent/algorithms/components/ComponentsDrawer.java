@@ -1,10 +1,10 @@
-package components;
+package concurrent.algorithms.components;
 
 import lombok.NoArgsConstructor;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
-import utils.Utils;
+import concurrent.algorithms.utils.Utils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,10 +16,10 @@ public class ComponentsDrawer {
 
     private static final int MIN_PIXELS_INSIDE_COMPONENT = 10;
 
-    public void drawAndSave(String imagePath, int numberOfThreads) {
+    public void drawAndSave(String imagePath, int numberOfThreads, int similarity) {
         Mat image = Imgcodecs.imread(imagePath, Imgcodecs.IMREAD_GRAYSCALE);
 
-        ComponentsFinder componentsFinder = new ComponentsFinder(numberOfThreads, image);
+        ComponentsFinder componentsFinder = new ComponentsFinder(numberOfThreads, image, similarity);
         componentsFinder.execute();
 
         Map<Integer, Integer> compCounter = countComponents(image, componentsFinder);
@@ -40,8 +40,8 @@ public class ComponentsDrawer {
         System.out.println("Number of components: " + colorMap.size());
         String[] tokens = imagePath.split("/");
         String imageName = tokens[tokens.length - 1];
-        Imgcodecs.imwrite("results/grayscale_" + imageName, image);
-        Imgcodecs.imwrite("results/components_" + imageName, resultImage);
+        Imgcodecs.imwrite("grayscale_" + imageName, image);
+        Imgcodecs.imwrite("components_" + imageName, resultImage);
     }
 
     private int[] getColor(Map<Integer, Integer[]> colorMap, int componentId) {

@@ -1,9 +1,9 @@
-package components;
+package concurrent.algorithms.components;
 
 import org.opencv.core.Mat;
-import utils.Region;
-import utils.ImageUnionFind;
-import utils.Utils;
+import concurrent.algorithms.utils.Region;
+import concurrent.algorithms.utils.ImageUnionFind;
+import concurrent.algorithms.utils.Utils;
 
 import java.text.MessageFormat;
 import java.time.Duration;
@@ -19,12 +19,14 @@ class ComponentsFinder {
 
     private ImageUnionFind components;
     private int numberOfThreads;
+    private int similarity;
     private Mat image;
     private Region[] threadRegions;
     private ReentrantLock[] locks;
     private boolean[] readyFlags;
 
-    ComponentsFinder(int numberOfThreads, Mat grayscaleImage) {
+    ComponentsFinder(int numberOfThreads, Mat grayscaleImage, int similarity) {
+        this.similarity = similarity;
         this.numberOfThreads = numberOfThreads;
         this.locks = new ReentrantLock[numberOfThreads];
         for (int i = 0; i < numberOfThreads; ++i) {
@@ -123,7 +125,7 @@ class ComponentsFinder {
             int newCol = col + colMove[move];
 
             if (Utils.isCellInsideRegion(newRow, newCol, 0, rows - 1, startCol, endCol)
-                    && Utils.areGrayscaleColorsSimilar((int) image.get(row, col)[0], (int) image.get(newRow, newCol)[0])) {
+                    && Utils.areGrayscaleColorsSimilar((int) image.get(row, col)[0], (int) image.get(newRow, newCol)[0], this.similarity)) {
                 this.components.unionComponents(row, col, newRow, newCol);
             }
         }
