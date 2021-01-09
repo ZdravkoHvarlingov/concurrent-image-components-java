@@ -81,10 +81,10 @@ At every step the number of threads is twice less. At the very end we draw all d
 
 ### Color similarity
 Color similarity is quite important part to be discussed because the result can be changed dramatically depending on how we determine it.
-1. Colorful images(RGB, HSV, etc..) - unfortunately this approach could not achieve satisfying results since the vector distance between two colors(most of the times with 3 components) usually is not a good metric for color similarity.
-2. Grayscale images - here for each pixel we have a single value(usually in the range 0-255). As you can image the similarity is calculated quite easily - we get the absolute difference between the values of two pixels. Even though this approach is not perfect, it works far more superior than the previous one.
+1. **Colorful images**(RGB, HSV, etc..) - unfortunately this approach could not achieve satisfying results since the vector distance between two colors(most of the times with 3 components) usually is not a good metric for color similarity.
+2. **Grayscale images** - here for each pixel we have a single value(usually in the range 0-255). As you can image the similarity is calculated quite easily - we get the absolute difference between the values of two pixels. Even though this approach is not perfect, it works far more superior than the previous one.
 That's why it is the one used inside this project for the example images.
-3. Binary images(black and white for example) - in terms of components finding, this is the best approach since we get perfect separation between the pixels and we have two possible options - either they have the same color or not. The only problem is that usually we use a lot of information during the process of making an image binary.
+3. **Binary images**(black and white for example) - in terms of components finding, this is the best approach since we get perfect separation between the pixels and we have two possible options - either they have the same color or not. The only problem is that usually we use a lot of information during the process of making an image binary.
 
 At the end of the day it really depends what kind of problem we are solving - if we are processing landscape images probably the color or grayscale approaches are better. But if the image is quite more simple, maybe it is better to make it binary(coins counting for example).
 
