@@ -89,10 +89,77 @@ That's why it is the one used inside this project for the example images.
 At the end of the day it really depends what kind of problem we are solving - if we are processing landscape images probably the color or grayscale approaches are better. But if the image is quite more simple, maybe it is better to make it binary(coins counting for example).
 
 ## Java implementation and usage
+### Python attempt
+Since python is much better integrated with OpenCV and easy to use, the first implementation tried using it.
+Unfortunately python does not support real multithreading and all the threads are running concurrently. Because of that no speed up was achieved no matter the CPU performance or the number of threads.
+
+### Java attempt
+Java is known to be much faster, nearly as fast as C and C++. Real multithreading is supported for sure. In addition OpenCV is also supported even though documentation is almost non present.
+The other positive is that with the help of Java cross platform execution and jar packaging the application could be easily packaged and executed on any machine for testing purposes.
+
+### Usage
+The application is implemented as a self explanatory CLI tool. There are two options if you want to use and test it:
+1. Clone the repository with your favorite editor or IDE, make sure you have at least Java 8 installed and start the application from the **Boot** file.
+2. There is much easier way. Download the compiled jar from _https://drive.google.com/file/d/1p6CVfiscnOg8ZwGw6Fd5R0S1HRzvftYq/view?usp=sharing_. Afterwards just start the jar file.
+3. Of course, the maven project is configured properly so you can easily make some modifications to the implementation and repackage it with the included **pom.xml**.
+
+
+Here is the command for using the jar file:
+```
+java -jar executable.jar -i ../images/landscape.jpg -t 10 -s 7 --verbose
+```
+
+You can see that there are multiple CLI arguments:
+- **--i or -image**: the path to the image you want to process
+- **--t or -threads**: the number of threads used by the algorithm
+- **--s or -similarity**: the grayscale similarity threshold, which is an integer value(ex. 5, 10, 15...)
+- **--verbose**: specifies whether you want to see additional logs or not
+
 
 ## Test results and speedup
+Here comes the interesting part. At the end of the day if there is no significant time boost there is no reason to use concurrency at all, isn't it?
 
+The CLI tool was tested on the following hardware setup provided by **Google Cloud Compute**:
+```
+CPU: Intel® Xeon® Processor E5-2630, 15M Cache, 2.30 GHz, 24 virtual cores, 48 threads
+RAM: 24GB DDR4 2400MHz
+OS: Debian 10
+```
+Having 48 threads under the roof should be more than enough for testing purposes even if we can't use all of them in parallel at the same time.
+
+I know you are curious, so here are the results displayed on these diagrams:
+
+![diagram 1](doc_images/diagram1.png "Diagram 1")
+
+![diagram 2](doc_images/diagram2.png "Diagram 2")
+
+Here you can see the exact times:
+
+![table](doc_images/times_table.png "Table")
+
+As we can see there is a significant time boost with more than 10 times in the case of **6016x6016** image.
+Unfortunately what we can notice is that after a certain point adding more threads does not improve the overall time since it comes with a price(spawning and destroying threads plus threads synchronization).
 ## Result examples
+It has all been text and numbers until now but at the end of the day we are talking about image processing. So here are some example results:
+
+![squares](doc_images/squares_concat.jpg "Squares")
+
+![stars](doc_images/stars_concat.jpg "Stars")
+
+![squares2](doc_images/squares2_concat.jpg "Squares2")
+
+![tree](doc_images/tree_concat.jpg "Tree")
+
+![tree2](doc_images/tree2_concat.jpg "Tree2")
+
+![mountain](doc_images/mountain_concat.jpg "Mountain")
+
+![golf](doc_images/golf_concat.jpg "Golf")
+
+![golf2](doc_images/golf2_concat.jpg "Golf2")
+
+As you can see - the more details inside the image, the harder it gets to guess the right similarity when using grayscale.
+Also it can be easily seen that shadows are somewhat of an enemy of the algorithm.
 
 ## Conclusion
 
