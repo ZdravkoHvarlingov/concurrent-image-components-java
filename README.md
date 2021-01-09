@@ -78,7 +78,7 @@ Well in order to avoid a wall of text, let's try to explain it all using the ima
 
 As you can see once every first thread of the working ones finish it waits for the one right after it.
 Afterwards it merges the components of both regions using the last column of the first thread.
-At every step the number of threads is twice less. At the very end we draw all different components with unique random colors and we draw only the ones which have at least 10 pixels in it. Yes, the number 10 is a bit magical but can be easily changed.
+At every step the number of threads is twice less. At the very end we draw all different components with unique random colors and we draw only the ones which have at least 10 pixels in them. Yes, the number 10 is a bit magical but can be easily changed.
 
 ### Color similarity
 Color similarity is quite important part to be discussed because the result can be changed dramatically depending on how we determine it.
