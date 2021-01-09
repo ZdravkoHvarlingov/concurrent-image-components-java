@@ -9,6 +9,7 @@
 5. Test results and speedup
 6. Result examples
 7. Conclusion
+8. Further improvements
 
 ## Connected components and their usefulness
 In terms of graph theory finding the connected components is a relatively old task for both directed and undirected graphs.
@@ -162,13 +163,9 @@ As you can see - the more details inside the image, the harder it gets to guess 
 Also it can be easily seen that shadows are somewhat of an enemy of the algorithm.
 
 ## Conclusion
+Well even though it seems like an easy task at first, making all of it concurrent is not as easy as it looks.
+The good thing is that a significant speed-up was achieved following a relatively simple strategy.
 
-#### Jar download link
-```
-https://drive.google.com/file/d/1p6CVfiscnOg8ZwGw6Fd5R0S1HRzvftYq/view?usp=sharing
-```
+## Further improvements
 
-#### Usage
-```
-java -jar executable.jar -i ../images/landscape.jpg -t 10 -s 7 --verbose
-```
+1. Research more deeply about color similarity and how to measure it within complex color images.
