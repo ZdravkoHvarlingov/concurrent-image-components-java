@@ -31,7 +31,7 @@ If we imagine the image as a rectangular matrix of pixels, by adjacent we mean t
 Using the above mathematical model the final task is to find the number of connected components inside that graph in a concurrent fashion :rocket:.
 
 ## Solution key ideas
-#### A single thread approach
+### A single thread approach
 Well, before we dive into the parallel and concurrent world it's good to see what standard single thread options and algorithms we have for connected components:
 - **BFS** (Breadth-first search) - if we start a BFS from a single node(pixel) it is going to traverse only the connected component of this pixel.
 Well, having this in mind, we can go through all pixels and if the pixel is not already traversed - start a BFS from that pixel. The number of BFS starts will give us the number of connected components.
@@ -56,7 +56,7 @@ In the end the Union data structure will contain **N** sets representing **N** c
 In addition to that we will have the exact component ID for every pixel. More than perfect!
 
 
-#### Concurrent or parallel approach
+### Concurrent or parallel approach
 We already have multiple single threaded approaches. So it's time to analise them and see if they are appropriate and easily transformed for parallelism.
 
 - **BFS/DFS** - unfortunately these can be made concurrent quite hard. The positive thing is that we can avoid making them concurrent.
@@ -72,6 +72,9 @@ As you probably noted in the text above, we are going to implement two phases of
 2. Merge all the components from the different regions
 
 Well in order to avoid a wall of text, let's try to explain it all using several images:
+
+
+### Color similarity
 
 #### Jar download link
 ```
