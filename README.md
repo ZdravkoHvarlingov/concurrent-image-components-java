@@ -5,8 +5,8 @@
 1. What are connected components? Why are they useful in image processing?
 2. Task definition and mathematical model
 3. Solution key ideas
-4. Java implementation and usages
-5. Test results
+4. Java implementation and usage
+5. Test results and speedup
 6. Result examples
 7. Conclusion
 
@@ -71,10 +71,30 @@ As you probably noted in the text above, we are going to implement two phases of
 1. Find the components of an image region
 2. Merge all the components from the different regions
 
-Well in order to avoid a wall of text, let's try to explain it all using several images:
+Well in order to avoid a wall of text, let's try to explain it all using the image:
 
+![algorithm work](doc_images/AlgorithmWork.png "Algorithm work")
+
+As you can see once every first thread of the working ones finish it waits for the one right after it.
+Afterwards it merges the components of both regions using the last column of the first thread.
+At every step the number of threads is twice less. At the very end we draw all different components with unique random colors and we draw only the ones which have at least 10 pixels in it. Yes, the number 10 is a bit magical but can be easily changed.
 
 ### Color similarity
+Color similarity is quite important part to be discussed because the result can be changed dramatically depending on how we determine it.
+1. Colorful images(RGB, HSV, etc..) - unfortunately this approach could not achieve satisfying results since the vector distance between two colors(most of the times with 3 components) usually is not a good metric for color similarity.
+2. Grayscale images - here for each pixel we have a single value(usually in the range 0-255). As you can image the similarity is calculated quite easily - we get the absolute difference between the values of two pixels. Even though this approach is not perfect, it works far more superior than the previous one.
+That's why it is the one used inside this project for the example images.
+3. Binary images(black and white for example) - in terms of components finding, this is the best approach since we get perfect separation between the pixels and we have two possible options - either they have the same color or not. The only problem is that usually we use a lot of information during the process of making an image binary.
+
+At the end of the day it really depends what kind of problem we are solving - if we are processing landscape images probably the color or grayscale approaches are better. But if the image is quite more simple, maybe it is better to make it binary(coins counting for example).
+
+## Java implementation and usage
+
+## Test results and speedup
+
+## Result examples
+
+## Conclusion
 
 #### Jar download link
 ```
