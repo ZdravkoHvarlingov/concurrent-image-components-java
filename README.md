@@ -7,7 +7,7 @@
 3. Solution key ideas
 4. Java implementation and usage
 5. Test results and speedup
-6. Result examples
+6. Result examples with and without quantization
 7. Conclusion
 8. Further improvements
 
@@ -89,6 +89,9 @@ That's why it is the one used inside this project for the example images.
 
 At the end of the day it really depends what kind of problem we are solving - if we are processing landscape images probably the color or grayscale approaches are better. But if the image is quite more simple, maybe it is better to make it binary(coins counting for example).
 
+### Image quantization
+In the second version of the project an image quantization technique is introduced utilizing K Means algorithms. The idea is to first compress the colorful image to several colors and afterwards convert it to grayscale as before. In overall one more intermediate step is added.
+
 ## Java implementation and usage
 ### Python attempt
 Since python is much better integrated with OpenCV and easy to use, the first implementation tried using it.
@@ -101,19 +104,21 @@ The other positive is that with the help of Java cross platform execution and ja
 ### Usage
 The application is implemented as a self explanatory CLI tool. There are two options if you want to use and test it:
 1. Clone the repository with your favorite editor or IDE, make sure you have at least Java 8 installed and start the application from the **Boot** file.
-2. There is much easier way. Download the compiled jar from _https://drive.google.com/file/d/1p6CVfiscnOg8ZwGw6Fd5R0S1HRzvftYq/view?usp=sharing_. Afterwards just start the jar file.
+2. There is much easier way. Download the compiled jar from _https://drive.google.com/file/d/11ntLBzLOJjxmpRfhoghKXIx0qFQ6fPku/view?usp=sharing_. Afterwards just start the jar file.
 3. Of course, the maven project is configured properly so you can easily make some modifications to the implementation and repackage it with the included **pom.xml**.
 
 
 Here is the command for using the jar file:
 ```
-java -jar executable.jar -i ../images/landscape.jpg -t 10 -s 7 --verbose
+java -jar executable.jar -i ../images/landscape.jpg -t 10 -s 7 -c 10 -m 10 --verbose
 ```
 
 You can see that there are multiple CLI arguments:
 - **--i or -image**: the path to the image you want to process
 - **--t or -threads**: the number of threads used by the algorithm
 - **--s or -similarity**: the grayscale similarity threshold, which is an integer value(ex. 5, 10, 15...)
+- **--c or -clusters**: the K Means number of clusters
+- **--m or -minsize**:  the minimum number of pixels inside a component
 - **--verbose**: specifies whether you want to see additional logs or not
 
 
@@ -140,7 +145,8 @@ Here you can see the exact times:
 
 As we can see there is a significant time boost with more than 10 times in the case of **6016x6016** image.
 Unfortunately what we can notice is that after a certain point adding more threads does not improve the overall time since it comes with a price(spawning and destroying threads plus threads synchronization).
-## Result examples
+
+## Result examples without quantization
 It has all been text and numbers until now but at the end of the day we are talking about image processing. So here are some example results:
 
 ![squares](doc_images/squares_concat.jpg "Squares")
@@ -161,6 +167,21 @@ It has all been text and numbers until now but at the end of the day we are talk
 
 As you can see - the more details inside the image, the harder it gets to guess the right similarity when using grayscale.
 Also it can be easily seen that shadows are somewhat of an enemy of the algorithm.
+
+## Result examples with quantization
+As we saw in the previous section it is quite difficult to determine the components of a complex RGB image. Let's see what is the result using quantization with K Means.
+
+The first image is the compressed one followed by the grayscale and components ones.
+
+![squares_v2](doc_images/squares_concat_v2.jpg "SquaresV2")
+
+![tree_v2](doc_images/tree_concat_v2.jpg "TreeV2")
+
+![mountain_v2](doc_images/mountain_concat_v2.jpg "MountainV2")
+
+![golf_v2](doc_images/golf_concat_v2.jpg "GolfV2")
+
+Overall we can notice that we have a significant improvement only by transforming the full image to an image with approximately 10 colors. Hence we can conclude that the additional computation is worth it!
 
 ## Conclusion
 Well even though it seems like an easy task at first, making all of it concurrent is not as easy as it looks.

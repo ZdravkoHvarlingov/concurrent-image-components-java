@@ -23,6 +23,12 @@ public class Boot {
         similarityOpt.setRequired(true);
         options.addOption(similarityOpt);
 
+        Option clustersOpt = new Option("c", "clusters", true, "kmeans number of clusters");
+        options.addOption(clustersOpt);
+
+        Option compSizeOpt = new Option("m", "minsize", true, "minimum size of a component");
+        options.addOption(compSizeOpt);
+
         Option verboseOpt = new Option("v", "verbose", false, "log additional information");
         options.addOption(verboseOpt);
 
@@ -39,14 +45,16 @@ public class Boot {
             return null;
         }
 
-        boolean verbose = false;
-        if (cmd.hasOption("verbose")) {
-            verbose = true;
-        }
+        int numberOfClusters = cmd.hasOption("clusters") ? Integer.parseInt(cmd.getOptionValue("clusters")) : -1;
+        int compMinSize = cmd.hasOption("minsize") ? Integer.parseInt(cmd.getOptionValue("minsize")) : -1;
+        boolean verbose = cmd.hasOption("verbose");
+
         return new CLIParams(
                 cmd.getOptionValue("image"),
                 Integer.parseInt(cmd.getOptionValue("threads")),
                 Integer.parseInt(cmd.getOptionValue("similarity")),
+                numberOfClusters,
+                compMinSize,
                 verbose
         );
     }
@@ -63,6 +71,8 @@ public class Boot {
                 params.getInputImageFile(),
                 params.getNumberOfThreads(),
                 params.getSimilarity(),
+                params.getNumberOfClusters(),
+                params.getComponentMinSize(),
                 params.isVerbose()
         );
     }
@@ -74,6 +84,8 @@ public class Boot {
         private String inputImageFile;
         private int numberOfThreads;
         private int similarity;
+        private int numberOfClusters;
+        private int componentMinSize;
         private boolean verbose;
     }
 }
