@@ -8,3 +8,5 @@
 *.class
 **/core-properties/**
 **/target/**
+
+*.pdf

@@ -10,6 +10,7 @@
 6. Result examples with and without quantization
 7. Conclusion
 8. Further improvements
+9. References
 
 ## Connected components and their usefulness
 In terms of graph theory finding the connected components is a relatively old task for both directed and undirected graphs.
@@ -190,3 +191,12 @@ The good thing is that a significant speed-up was achieved following a relativel
 ## Further improvements
 
 1. Research more deeply about color similarity and how to measure it within complex color images.
+
+## References
+
+- [1] https://en.wikipedia.org/wiki/Connected-component_labeling
+- [2] https://docs.opencv.org/master/javadoc/index.html
+- [3] https://homepages.inf.ed.ac.uk/rbf/HIPR2/label.htm
+
+## Source code
+*https://github.com/ZdravkoHvarlingov/concurrent-image-components-java*
